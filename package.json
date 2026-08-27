@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "tsx server.ts",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "start": "node dist/server.cjs",
     "preview": "vite preview",
     "lint": "tsc --noEmit"
   },
@@ -15,20 +16,29 @@
     "@vitejs/plugin-react": "^5.0.4",
     "dotenv": "^17.2.3",
     "downloadjs": "^1.4.7",
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2",
+    "express": "^5.2.1",
     "firebase": "^12.16.0",
+    "firebase-admin": "^14.3.0",
     "html-to-image": "^1.11.13",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
+    "pg": "^8.23.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "vite": "^6.2.3"
   },
   "devDependencies": {
     "@firebase/eslint-plugin-security-rules": "^0.0.2",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.14.0",
+    "@types/pg": "^8.23.1",
     "autoprefixer": "^10.4.21",
+    "esbuild": "^0.28.2",
     "eslint": "^10.7.0",
     "tailwindcss": "^4.1.14",
+    "tsx": "^4.23.12",
     "typescript": "~5.8.2",
     "vite": "^6.2.3"
   }

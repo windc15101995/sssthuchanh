@@ -57,6 +57,19 @@ export default function App() {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object') {
+            setTemplateConfig(prev => ({ ...prev, ...data }));
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('API config fetch failed, trying Firestore fallback:', err);
+      }
+
+      try {
         const configRef = doc(db, 'config', 'global');
         const docSnap = await getDoc(configRef);
         if (docSnap.exists()) {
@@ -73,13 +86,34 @@ export default function App() {
   }, []);
 
   const handleSaveConfig = async (overrideConfig?: TemplateConfig) => {
+    const configToSave = overrideConfig || templateConfig;
+    let saved = false;
+
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(configToSave)
+      });
+      if (res.ok) {
+        saved = true;
+      }
+    } catch (e) {
+      console.warn('Could not save to Cloud SQL API, falling back to Firestore', e);
+    }
+
     try {
       const configRef = doc(db, 'config', 'global');
-      await setDoc(configRef, overrideConfig || templateConfig);
+      await setDoc(configRef, configToSave);
+      saved = true;
+    } catch (e) {
+      console.warn('Could not save to Firestore fallback', e);
+    }
+
+    if (saved) {
       alert('Đã lưu tùy chọn cấu hình thành công cho tất cả mọi người!');
-    } catch (e: any) {
-      console.error(e);
-      alert('Lỗi khi lưu cấu hình: ' + e.message);
+    } else {
+      alert('Lỗi khi lưu cấu hình');
     }
   };
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Book, GraduationCap, ArrowLeft, CheckCircle, RefreshCw, LogIn, FileText } from 'lucide-react';
-import { googleSignIn, getAccessToken, initAuth, logout } from '../auth';
-import { User } from 'firebase/auth';
+import { Book, GraduationCap, ArrowLeft, CheckCircle, RefreshCw, LogIn, FileText, AlertCircle, Copy, Check, ExternalLink } from 'lucide-react';
+import { googleSignIn, getAccessToken, initAuth, logout, AppUser } from '../auth';
 
 interface Course {
   id: string;
@@ -29,9 +28,11 @@ interface StudentSubmission {
 
 export function ClassroomPanel() {
   const [needsAuth, setNeedsAuth] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<{ code?: string; message: string; isDomainError?: boolean } | null>(null);
+  const [copiedDomain, setCopiedDomain] = useState(false);
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -47,6 +48,7 @@ export function ClassroomPanel() {
       (u, token) => {
         setUser(u);
         setNeedsAuth(false);
+        setAuthError(null);
         fetchCourses(token);
       },
       () => {
@@ -156,20 +158,40 @@ export function ClassroomPanel() {
   };
 
   const handleLogin = () => {
+    setAuthError(null);
+    setIsLoggingIn(true);
     googleSignIn()
       .then(result => {
         if (result) {
+          setUser(result.user);
           setNeedsAuth(false);
           fetchCourses(result.accessToken);
         }
       })
-      .catch(e => {
-        console.error(e);
-        if (e?.code === 'auth/popup-closed-by-user') {
-          // Do nothing or show a mild message, the user just closed the window
-          console.log('User closed the login popup.');
+      .catch((e: any) => {
+        console.error('Login error details:', e);
+        const errorCode = e?.code || e?.error || '';
+        const errorMessage = e?.message || '';
+
+        if (errorCode === 'auth/popup-closed-by-user' || errorCode === 'popup_closed_by_user') {
+          // User closed popup deliberately
+          setAuthError(null);
+        } else if (errorCode === 'auth/unauthorized-domain' || errorMessage.includes('unauthorized-domain') || errorMessage.includes('authorized domain')) {
+          setAuthError({
+            code: 'auth/unauthorized-domain',
+            message: `Tên miền ${window.location.hostname} chưa được thêm vào Danh sách miền được ủy quyền (Authorized Domains) trong Firebase Console.`,
+            isDomainError: true
+          });
+        } else if (errorCode === 'auth/popup-blocked' || errorCode === 'popup_blocked_by_browser') {
+          setAuthError({
+            code: 'auth/popup-blocked',
+            message: 'Cửa sổ đăng nhập (popup) đã bị trình duyệt chặn. Vui lòng cho phép popup trên thanh địa chỉ của trình duyệt hoặc nhấn nút Thử lại.'
+          });
         } else {
-          alert('Lỗi đăng nhập Google: Popup bị chặn hoặc lỗi kết nối. Vui lòng cho phép popup trên trình duyệt của bạn (hoặc nhấn nút đăng nhập lại).');
+          setAuthError({
+            code: errorCode || 'auth/unknown',
+            message: errorMessage || 'Không thể mở cửa sổ đăng nhập hoặc xác thực thất bại. Vui lòng thử lại.'
+          });
         }
       })
       .finally(() => {
@@ -177,27 +199,87 @@ export function ClassroomPanel() {
       });
   };
 
+  const copyCurrentDomain = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.hostname);
+      setCopiedDomain(true);
+      setTimeout(() => setCopiedDomain(false), 2000);
+    }
+  };
+
   if (needsAuth) {
+    const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-white rounded-2xl shadow-sm p-8 text-center max-w-md mx-auto my-auto mt-20">
-        <GraduationCap className="w-16 h-16 text-[#5A5A40] mb-4" />
-        <h2 className="text-xl font-bold text-[#3C3633] mb-2">Hệ thống Giáo dục & Chấm điểm</h2>
-        <p className="text-gray-500 text-sm mb-8">Đăng nhập tài khoản Google để đồng bộ dữ liệu với Google Classroom và tiến hành quản lý lớp học, chấm điểm học viên.</p>
-        
-        <button 
-          onClick={handleLogin}
-          disabled={isLoggingIn}
-          className="flex items-center gap-3 bg-white border border-gray-300 rounded-md px-6 py-3 shadow-sm hover:bg-gray-50 transition-colors font-medium text-gray-700 disabled:opacity-50"
-        >
-          <svg className="w-5 h-5" viewBox="0 0 48 48">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-            <path fill="none" d="M0 0h48v48H0z"></path>
-          </svg>
-          {isLoggingIn ? 'Đang kết nối...' : 'Đăng nhập với Google'}
-        </button>
+      <div className="flex flex-col items-center justify-center min-h-[500px] w-full max-w-lg mx-auto my-auto p-4 sm:p-6">
+        <div className="w-full bg-white rounded-2xl shadow-sm border border-[#E2E2D8] p-6 sm:p-8 text-center flex flex-col items-center">
+          <div className="w-14 h-14 rounded-full bg-[#F5F5F0] flex items-center justify-center mb-4">
+            <GraduationCap className="w-8 h-8 text-[#5A5A40]" />
+          </div>
+          <h2 className="text-xl font-bold text-[#3C3633] mb-2">Hệ thống Giáo dục & Chấm điểm</h2>
+          <p className="text-gray-500 text-sm mb-6 max-w-sm">
+            Đăng nhập tài khoản Google để đồng bộ dữ liệu với Google Classroom và tiến hành quản lý lớp học, chấm điểm học viên.
+          </p>
+
+          {authError && (
+            <div className="w-full bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left text-xs sm:text-sm text-amber-900 animate-fadeIn">
+              <div className="flex items-start gap-2.5 mb-2">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-amber-900 mb-1">
+                    {authError.isDomainError ? 'Cần cấp phép tên miền trên Firebase' : 'Thông báo đăng nhập'}
+                  </h4>
+                  <p className="text-amber-800 leading-relaxed">{authError.message}</p>
+                </div>
+              </div>
+
+              {authError.isDomainError && (
+                <div className="mt-3 pt-3 border-t border-amber-200/60 text-xs space-y-2">
+                  <p className="font-medium text-amber-900">Cách xử lý trên Firebase Console:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-amber-800">
+                    <li>Vào <b>Firebase Console</b> &rarr; <b>Authentication</b> &rarr; <b>Settings</b> &rarr; <b>Authorized domains</b></li>
+                    <li>Bấm <b>Add domain</b> và dán tên miền:</li>
+                  </ol>
+                  <div className="flex items-center gap-2 mt-1.5 bg-white/80 border border-amber-300 rounded-md p-2">
+                    <code className="font-mono text-amber-950 flex-1 truncate font-semibold">{currentHost}</code>
+                    <button
+                      type="button"
+                      onClick={copyCurrentDomain}
+                      className="px-2.5 py-1 bg-[#5A5A40] text-white rounded text-[11px] font-medium flex items-center gap-1 hover:bg-[#4A4A35] transition-colors shrink-0"
+                    >
+                      {copiedDomain ? <Check className="w-3.5 h-3.5 text-green-300" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedDomain ? 'Đã chép' : 'Sao chép'}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <button 
+            onClick={handleLogin}
+            disabled={isLoggingIn}
+            className="w-full sm:w-auto flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-xl px-6 py-3.5 shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-all font-medium text-gray-700 disabled:opacity-50"
+          >
+            {isLoggingIn ? (
+              <>
+                <RefreshCw className="w-5 h-5 text-[#5A5A40] animate-spin" />
+                <span>Đang kết nối Google...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" viewBox="0 0 48 48">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                  <path fill="none" d="M0 0h48v48H0z"></path>
+                </svg>
+                <span>Đăng nhập với Google</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
     );
   }
