@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    function incoming() { 
+      return request.resource.data; 
+    }
+
+    function existing() { 
+      return resource.data; 
+    }
+
+    function isValidConfig(data) {
+      let hasRequired = data.keys().hasAny(['fontSize', 'textColor', 'fontFamily', 'headingColor1', 'headingColor2', 'borderColor1', 'borderColor2', 'borderColor3', 'backgroundColor']);
+      let hasValidTypes = data.fontSize is number && 
+            data.textColor is string && data.textColor.size() <= 100 && 
+            data.fontFamily is string && data.fontFamily.size() <= 200 && 
+            data.headingColor1 is string && data.headingColor1.size() <= 100 && 
+            data.headingColor2 is string && data.headingColor2.size() <= 100 && 
+            data.borderColor1 is string && data.borderColor1.size() <= 100 && 
+            data.borderColor2 is string && data.borderColor2.size() <= 100 && 
+            data.borderColor3 is string && data.borderColor3.size() <= 100 && 
+            data.backgroundColor is string && data.backgroundColor.size() <= 100;
+      let hasValidOptional = (!('logoUrl' in data) || (data.logoUrl is string && data.logoUrl.size() <= 1000000)) && 
+                             (!('fieldsConfig' in data) || data.fieldsConfig is map);
+      return hasRequired && hasValidTypes && hasValidOptional;
+    }
+
+    function isValidDraft(data) {
+      return data.keys().hasAll(['pin', 'data', 'timestamp']) && 
+             data.keys().size() == 3 && 
+             data.pin is string && data.pin.size() <= 128 && 
+             data.data is map && 
+             data.timestamp is number;
+    }
+
+    function isValidChatMessage(data) {
+      let hasRequired = data.keys().hasAll(['senderName', 'timestamp']) &&
+             data.senderName is string && data.senderName.size() <= 100 &&
+             data.timestamp is number;
+      let hasValidContent = !('content' in data) || (data.content is string && data.content.size() <= 10000);
+      let hasValidImage = !('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1048576);
+      return hasRequired && hasValidContent && hasValidImage;
+    }
+
+    match /config/{configId} {
+      allow read: if true;
+      allow create: if isValidId(configId) && isValidConfig(incoming());
+      allow update: if isValidId(configId) && isValidConfig(incoming());
+    }
+
+    match /drafts/{pin} {
+      allow read: if true;
+      allow create: if isValidId(pin) && isValidDraft(incoming()) && incoming().pin == pin;
+      allow update: if isValidId(pin) && isValidDraft(incoming()) && incoming().pin == pin && existing().pin == incoming().pin;
+      allow delete: if isValidId(pin);
+    }
+
+    match /chat_messages/{messageId} {
+      allow read: if true;
+      allow create: if isValidChatMessage(incoming());
+      allow delete: if true;
+    }
+    
+    match /chat_kicks/{kickId} {
+      allow read, write: if true;
+    }
+    
+    match /support_cases/{caseId} {
+      allow read, write: if true;
+    }
+    
+    match /support_messages/{messageId} {
+      allow read, write: if true;
+    }
+    
+    match /chat_settings/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

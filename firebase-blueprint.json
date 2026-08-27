@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "Config": {
+      "title": "Global Configuration",
+      "description": "Global configuration settings for the template",
+      "type": "object",
+      "properties": {
+        "fontSize": { "type": "number" },
+        "textColor": { "type": "string" },
+        "fontFamily": { "type": "string" },
+        "headingColor1": { "type": "string" },
+        "headingColor2": { "type": "string" },
+        "borderColor1": { "type": "string" },
+        "borderColor2": { "type": "string" },
+        "borderColor3": { "type": "string" },
+        "backgroundColor": { "type": "string" },
+        "fieldsConfig": { "type": "object" }
+      }
+    },
+    "Draft": {
+      "title": "Form Draft",
+      "description": "A draft of the user's form inputs, keyed by PIN",
+      "type": "object",
+      "properties": {
+        "pin": { "type": "string" },
+        "data": { "type": "object" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["pin", "data", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/config/global": {
+      "schema": { "$ref": "#/entities/Config" },
+      "description": "Stores the global template configuration"
+    },
+    "/drafts/{pin}": {
+      "schema": { "$ref": "#/entities/Draft" },
+      "description": "Stores a draft entry, with the document ID being the PIN"
+    }
+  }
+}

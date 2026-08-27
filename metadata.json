@@ -1,0 +1,8 @@
+{
+  "name": "tạo ảnh thực hành",
+  "description": "A tool to input data via a survey form and export it to a pre-designed template image.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
