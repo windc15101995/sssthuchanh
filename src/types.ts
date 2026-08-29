@@ -23,6 +23,8 @@ export interface TemplateConfig {
 export interface FormData {
   writer: string;
   date: string;
+  bo: string;
+  giaiDoan: string;
   thucCanh: string;
   tinhHuong: string;
   soiTinhXau: string;
@@ -60,6 +62,8 @@ defaultTemplateConfig.borderColor3 = '#93c5fd'; // light blue border
 export const defaultFormData: FormData = {
   writer: '',
   date: new Date().toLocaleDateString('vi-VN'),
+  bo: 'BỘ 01. ĐỜI SỐNG NỘI TÂM',
+  giaiDoan: 'Giai đoạn 01. Hình thành nền móng',
   thucCanh: '',
   tinhHuong: '',
   soiTinhXau: '',

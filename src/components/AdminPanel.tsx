@@ -48,6 +48,8 @@ const ColorInput = ({ label, name, value, onChange }: ColorInputProps) => {
 )};
 
 const CONFIGURABLE_FIELDS = [
+  { key: 'bo', label: 'Tên Bộ' },
+  { key: 'giaiDoan', label: 'Giai đoạn' },
   { key: 'tinhHuong', label: 'Tình huống' },
   { key: 'thucCanh', label: 'Thực cảnh' },
   { key: 'soiTinhXau', label: 'Soi tính xấu' },
@@ -239,7 +241,7 @@ export function AdminPanel({ config, onChange, onSave, onViewDraft }: AdminPanel
     const newFieldsConfig = { ...(config.fieldsConfig || {}) };
     newFieldsConfig[fieldKey] = {
       type,
-      options: optionsStr.split('\n').map(s => s.trim()).filter(Boolean)
+      options: optionsStr.split('\n')
     };
     onChange({ ...config, fieldsConfig: newFieldsConfig });
   };

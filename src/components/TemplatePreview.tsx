@@ -86,11 +86,35 @@ export const TemplatePreview = forwardRef<HTMLDivElement, TemplatePreviewProps>(
             <div className="flex flex-col pl-6 pr-6 min-w-0 justify-center h-full">
               <div className="h-[31px] mb-3 flex items-center">
                 <h4 className="font-bold text-[15px] uppercase whitespace-nowrap">
-                  <span style={{ color: headingColor1 }}>BỘ 01. </span><span style={{ color: headingColor2 }}>ĐỜI SỐNG NỘI TÂM</span>
+                  {(() => {
+                    const val = data.bo || 'BỘ 01. ĐỜI SỐNG NỘI TÂM';
+                    const parts = val.split('. ');
+                    if (parts.length > 1) {
+                      return (
+                        <>
+                          <span style={{ color: headingColor1 }}>{parts[0]}. </span>
+                          <span style={{ color: headingColor2 }}>{parts.slice(1).join('. ')}</span>
+                        </>
+                      );
+                    }
+                    return <span style={{ color: headingColor2 }}>{val}</span>;
+                  })()}
                 </h4>
               </div>
               <div className="font-bold text-[14px] uppercase whitespace-nowrap mb-1">
-                <span style={{ color: headingColor2 }}>Giai đoạn 01. </span><span style={{ color: headingColor1 }}>Hình thành nền móng</span>
+                {(() => {
+                  const val = data.giaiDoan || 'Giai đoạn 01. Hình thành nền móng';
+                  const parts = val.split('. ');
+                  if (parts.length > 1) {
+                    return (
+                      <>
+                        <span style={{ color: headingColor2 }}>{parts[0]}. </span>
+                        <span style={{ color: headingColor1 }}>{parts.slice(1).join('. ')}</span>
+                      </>
+                    );
+                  }
+                  return <span style={{ color: headingColor1 }}>{val}</span>;
+                })()}
               </div>
               <div className="font-bold text-[14px] leading-snug break-words uppercase">
                 {(() => {

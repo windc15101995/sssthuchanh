@@ -18,21 +18,38 @@ interface InputFieldProps {
   name: keyof FormData;
   placeholder?: string;
   value: string;
+  config?: TemplateConfig;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }
 
-const InputField = ({ label, name, placeholder, value, onChange }: InputFieldProps) => {
+const InputField = ({ label, name, placeholder, value, config, onChange }: InputFieldProps) => {
+  const fieldConfig = config?.fieldsConfig?.[name];
+
   return (
     <div>
       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">{label}</label>
-      <input
-        type="text"
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full border-b-2 border-[#F5F5F0] focus:border-[#7A8471] outline-none text-[12px] py-1 text-[#3C3633] bg-transparent transition-colors"
-      />
+      {fieldConfig?.type === 'select' ? (
+        <select
+          name={name}
+          value={value}
+          onChange={onChange}
+          className="w-full border-b-2 border-[#F5F5F0] focus:border-[#7A8471] outline-none text-[12px] py-1 text-[#3C3633] bg-transparent transition-colors"
+        >
+          <option value="">-- Chọn --</option>
+          {fieldConfig.options?.map(opt => opt.trim()).filter(Boolean).map((opt, i) => (
+            <option key={i} value={opt}>{opt}</option>
+          ))}
+        </select>
+      ) : (
+        <input
+          type="text"
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className="w-full border-b-2 border-[#F5F5F0] focus:border-[#7A8471] outline-none text-[12px] py-1 text-[#3C3633] bg-transparent transition-colors"
+        />
+      )}
     </div>
   );
 };
@@ -71,7 +88,7 @@ const TextAreaField = ({ label, name, rows = 3, placeholder, value, config, maxL
           className="w-full bg-[#F9F9F7] border border-transparent focus:border-[#7A8471] rounded p-2 text-[12px] text-[#3C3633] outline-none transition-colors"
         >
           <option value="">-- Chọn --</option>
-          {fieldConfig.options?.map((opt, i) => (
+          {fieldConfig.options?.map(opt => opt.trim()).filter(Boolean).map((opt, i) => (
             <option key={i} value={opt}>{opt}</option>
           ))}
         </select>
@@ -281,6 +298,11 @@ export function FormInput({ data, config, onChange, onPreview, onHelp }: FormInp
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <InputField label="Ngày" name="date" placeholder="DD/MM/YYYY" value={data.date} onChange={handleChange} />
           <InputField label="Writer (Người viết)" name="writer" placeholder="Tên của bạn" value={data.writer} onChange={handleChange} />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+          <InputField config={config} label="Tên Bộ" name="bo" placeholder="Vd: BỘ 01. ĐỜI SỐNG NỘI TÂM" value={data.bo} onChange={handleChange} />
+          <InputField config={config} label="Giai đoạn" name="giaiDoan" placeholder="Vd: Giai đoạn 01. Hình thành nền móng" value={data.giaiDoan} onChange={handleChange} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
