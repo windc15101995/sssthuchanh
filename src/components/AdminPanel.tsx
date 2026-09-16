@@ -55,7 +55,7 @@ const CONFIGURABLE_FIELDS = [
   { key: 'soiTinhXau', label: 'Soi tính xấu' },
   { key: 'xetDocHai', label: 'Xét độc hại' },
   { key: 'thayHauQua', label: 'Thấy hậu quả' },
-  { key: 'nhinGoc', label: 'Nhìn gốc' },
+  { key: 'nhinGoc', label: 'Cấy gốc' },
   { key: 'chonTam', label: 'Chọn tâm' },
   { key: 'duongTinh', label: 'Dưỡng tính' },
   { key: 'phaChap', label: 'Phá chấp' },
