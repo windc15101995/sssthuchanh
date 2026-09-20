@@ -61,7 +61,7 @@ const CONFIGURABLE_FIELDS = [
   { key: 'phaChap', label: 'Phá chấp' },
   { key: 'dinhTam', label: 'Định tâm' },
   { key: 'phatTue', label: 'Phát tuệ' },
-  { key: 'thanhNguoi', label: 'Thành người' },
+  { key: 'thanhNguoi', label: 'Quyết định thành người' },
 ];
 
 export function AdminPanel({ config, onChange, onSave, onViewDraft }: AdminPanelProps) {

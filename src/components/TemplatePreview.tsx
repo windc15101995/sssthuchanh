@@ -261,7 +261,7 @@ export const TemplatePreview = forwardRef<HTMLDivElement, TemplatePreviewProps>(
                 className="w-48 shrink-0 border-r-[1px] p-4 flex items-start justify-start font-bold text-[14px] whitespace-nowrap"
                 style={{ borderColor: headingColor2, color: headingColor2 }}
               >
-                4. Thành người đáng tin
+                4. Quyết định thành người
               </div>
               <div className="flex-1 p-4 whitespace-pre-wrap min-h-[60px]">{data.thanhNguoi}</div>
             </div>

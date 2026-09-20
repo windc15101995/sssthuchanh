@@ -348,7 +348,7 @@ export function FormInput({ data, config, onChange, onPreview, onHelp }: FormInp
             <TextAreaField config={config} label="1. Phá chấp mở đường" name="phaChap" rows={2} value={data.phaChap} onChange={handleChange} />
             <TextAreaField config={config} label="2. Định tâm giải quyết" name="dinhTam" rows={2} value={data.dinhTam} onChange={handleChange} />
             <TextAreaField config={config} label="3. Phát tuệ hành xử" name="phatTue" rows={2} value={data.phatTue} onChange={handleChange} />
-            <TextAreaField config={config} label="4. Thành người đáng tin" name="thanhNguoi" rows={2} value={data.thanhNguoi} onChange={handleChange} />
+            <TextAreaField config={config} label="4. Quyết định thành người" name="thanhNguoi" rows={2} value={data.thanhNguoi} onChange={handleChange} />
           </div>
         </div>
 
